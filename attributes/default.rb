@@ -35,6 +35,9 @@ default['openresty']['cache_dir']             = '/var/cache/nginx'
 default['openresty']['run_dir']               = '/var/run'
 default['openresty']['binary']                = '/usr/sbin/nginx'
 default['openresty']['pid']                   = "#{node['openresty']['run_dir']}/nginx.pid"
+default['openresty']['error_log']             = [
+  "#{node['openresty']['log_dir']}/error.log"
+]
 
 # Namespaced attributes in order not to clash with the OHAI plugin
 default['openresty']['source']['conf_path']   = "#{node['openresty']['dir']}/nginx.conf"
