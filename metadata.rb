@@ -11,13 +11,13 @@ source_url        'https://github.com/priestjim/chef-openresty' if respond_to?(:
 
 recipe 'openresty', 'Installs the OpenResty NGINX bundle and sets up configuration with Debian apache style sites-enabled/sites-available'
 
-%w{ ubuntu debian centos redhat amazon scientific oracle fedora }.each do |os|
+%w{ ubuntu debian centos redhat amazon scientific oracle fedora suse opensuseleap }.each do |os|
   supports os
 end
 
 depends 'build-essential'
 depends 'logrotate'
-depends 'ohai', '~> 4.1'
+depends 'ohai', '~> 5.0'
 depends 'yum'
 depends 'apt'
 depends 'git'

@@ -1,19 +1,18 @@
-Description
-===========
+# OpenResty Chef Cookbook
 
-Installs the OpenResty NGINX bundle (http://www.openresty.org) from source and
-sets up configuration handling similar to Debian's Apache2 scripts. It also
-provides an OHAI plugin for configuration detection and an LWRP for easy site
+![Tag Version](https://img.shields.io/github/tag/priestjim/chef-openresty.svg) [![Cookbook Version](https://img.shields.io/cookbook/v/openresty.svg)](https://supermarket.chef.io/cookbooks/openresty) [![Build Status](https://travis-ci.org/priestjim/chef-openresty.svg?branch=master)](https://travis-ci.org/priestjim/chef-openresty) [![GitHub issues](https://img.shields.io/github/issues/priestjim/chef-openresty.svg)](https://github.com/priestjim/chef-openresty/issues) [![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://raw.githubusercontent.com/priestjim/chef-openresty/master/LICENSE)
+
+This cookbook installs the OpenResty NGINX bundle (http://www.openresty.org)
+from source and sets up configuration handling similar to Debian's Apache2 scripts.
+It also provides an OHAI plugin for configuration detection and an LWRP for easy site
 activation and deactivation.
 
 The latest and greatest revision of this cookbook will always be available
 at https://github.com/priestjim/chef-openresty
 
-Requirements
-============
+# Requirements
 
-Cookbooks
----------
+## Cookbooks
 
 The following cookbooks are direct dependencies because they're used
 for common "default" functionality.
@@ -30,8 +29,7 @@ the `postgresql` cookbook.
 If you want to link NGINX to the very performant jemalloc library, you'll
 need the `jemalloc` cookbook.
 
-Platform
---------
+## Platform
 
 The following platforms are supported and tested using test-kitchen:
 
@@ -40,13 +38,11 @@ The following platforms are supported and tested using test-kitchen:
 
 Other Debian and RHEL family distributions are assumed to work.
 
-Chef Server
------------
+## Chef Server
 
 The cookbook converges best on Chef installations >= 10.16.2
 
-Awesome stuff
-=============
+# Awesome stuff
 
 This cookbook includes automatic activation of some nice NGINX features such as:
 
@@ -77,8 +73,7 @@ This cookbook includes automatic activation of some nice NGINX features such as:
   installation, allowing you to install any rock you want, right from the official Rocks site. It
   also provides an LWRP for installing rocks via your recipes.
 
-Attributes
-==========
+# Attributes
 
 Node attributes for this cookbook are logically separated into different files.
 
@@ -114,6 +109,9 @@ Generally used attributes. Some have platform specific values. See
 
 * `node['openresty']['source']['path']` - Download and compilation temporary path.
 
+* `node['openresty']['source']['state']` - The state directory where Chef will keep state in a serverless
+  environment like Chef Solo, Zero or OpsWorks.
+
 * `node['openresty']['source']['default_configure_flags']` - A set of default configuration
   flags for the source compilation, generally best left untouched unless you
   *really* know what you're doing.
@@ -147,11 +145,13 @@ Generally used attributes. Some have platform specific values. See
 
 * `node['openresty']['gzip_types']` - used for config value of `gzip_types` - must be an Array.
 
-* `node['openresty']['keepalive']` - Whether to use `keepalive_timeout`,
+* `node['openresty']['keepalive']` - Whether to use `keepalive_timeout` and `keepalive_requests`,
   any value besides "on" will leave that option out of the config.
 
 * `node['openresty']['keepalive_timeout']` - used for config value of
   `keepalive_timeout`.
+
+* `node['openresty']['keepalive_requests']` - used for config value of keepalive_requests.
 
 * `node['openresty']['worker_processes']` - used for config value of
   `worker_processes`.
@@ -245,10 +245,17 @@ Define service-specific attributes
   activation and startup via the selected init service. Currently used by the default `init`
   service handler.
 
+<<<<<<< HEAD
 * `node['openresty']['service']['defaults_file_cookbook']` - Optionally specify a cookbook location 
   for a custom defaults file that contains exported environment variables for Nginx
 
 * `node['openresty']['service']['defaults_file_template']` - Optionally specify the template name, 
+=======
+* `node['openresty']['service']['defaults_file_cookbook']` - Optionally specify a cookbook location
+  for a custom defaults file that contains exported environment variables for Nginx
+
+* `node['openresty']['service']['defaults_file_template']` - Optionally specify the template name,
+>>>>>>> eae8fcadb8d27a3e216cc6464426211b0840e318
   if the previous `defaults_file_cookbook` attribute is not set to the current cookbook.
 
 
@@ -265,6 +272,7 @@ From: http://wiki.nginx.org/HttpRealIpModule
 * `node['openresty']['realip']['recursive']` - If recursive search is enabled, the original client
   address that matches one of the trusted addresses is replaced by the last non-trusted address sent in the
   request header field. Can be true or false (default).
+<<<<<<< HEAD
 
 ## fair.rb
 
@@ -273,6 +281,8 @@ From: http://wiki.nginx.org/HttpUpstreamFairModule
 * `node['openresty']['fair']['url']` - GitHub URL to checkout the fair module from
 
 * `node['openresty']['fair']['name']` - Directory name to checkout the module to
+=======
+>>>>>>> eae8fcadb8d27a3e216cc6464426211b0840e318
 
 ## upload_progress.rb
 
@@ -317,8 +327,7 @@ From: https://github.com/FRiCKLE/ngx_cache_purge and http://labs.frickle.com/ngi
 * `node['openresty']['luarocks']['default_rocks']` - A hash with the names and versions of Lua rocks
   to install by default.
 
-Recipes
-=======
+# Recipes
 
 ## default.rb
 
@@ -360,7 +369,7 @@ Includes the `ohai_plugin` recipe so the plugin is available.
 This recipe provides an Ohai plugin as a template. It is automatically included
 by the `default.rb` recipe.
 
-## http_*_module.rb, fair_module.rb, upload_progress_module.rb, cache_purge_module.rb
+## http_*_module.rb, upload_progress_module.rb, cache_purge_module.rb
 
 These recipes are automatically included by the `default.rb` recipe according to
 the `node['openresty']['modules']` array and provide compiled-in additional
@@ -384,8 +393,7 @@ default using the `node['openresty']['luarocks']['default_rocks']` hash.
 
 For more information on using LUA rocks with OpenResty check out http://openresty.org/#UsingLuaRocks
 
-Adding New Modules
-------------------
+## Adding New Modules
 
 To add a new module to be compiled into NGINX in the source recipe,
 the node's run state is manipulated in a recipe, and the module as a
@@ -409,8 +417,7 @@ which takes as elements full recipe references like
 The extra-cookbook modules will be included in the same manner as the standard
 intra-cookbook modules.
 
-LWRP
-====
+# LWRP
 
 ## site
 
@@ -442,12 +449,18 @@ LUA rocks using the `install` and `remove` actions of the LWRP. A sample follows
       version '1.1.2'
     end
 
+    openresty_luarock 'luasql-mysql' do
+      action :install
+      environment {
+        'MYSQL_DIR' => '/usr/local'
+      }
+    end
+
     openresty_luarock 'luafilesystem' do
       action :remove # Removes all versions installed
     end
 
-Ohai Plugin
-===========
+# Ohai Plugin
 
 The `ohai_plugin` recipe includes an Ohai plugin. It will be
 automatically installed and activated, providing the following
@@ -463,8 +476,7 @@ package):
 The Ohai plugin is generally used to determine whether control
 attributes for building NGINX have changed.
 
-Usage
-=====
+# Usage
 
 Include the recipe on your node or role. Modify the
 attributes as required in a role cookbook to change how various
@@ -473,8 +485,7 @@ configuration is applied per the attributes section above.
 If you need to alter the location of various cookbook_file
 directives, use `chef_rewind`.
 
-License and Author
-==================
+# License and Author
 
 - Author:: Panagiotis Papadomitsos (<pj@ezgr.net>)
 

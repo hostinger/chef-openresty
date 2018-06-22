@@ -1,3 +1,42 @@
+## 0.6.2
+
+* Fix zlib dependency
+* Update kitchen configuration
+
+## 0.6.1
+
+* Bump OpenResty version
+* Resolve #74
+
+## 0.6.0
+
+* Bump OpenResty version
+* Bump PCRE library version
+* Remove `fair` plugin as it's not compatible with the latest version of OR
+* Improve compatibility with AWS Opsworks and Chef Zero runs (resolves #15)
+
+## 0.5.8
+
+* Fix Amazon Linux + Chef 13 incompatibilities (fix #69)
+* Add config test to nginx init script
+
+## 0.5.7
+
+* Bump OpenResty version
+* Change solo run detection method to include cases such as OpsWorks runs (resolves #15)
+* Add Travis CI support
+
+## 0.5.6
+
+* Update ohai cookbook version (fixes #66)
+* Consider revision number on LUA rock installation (fixes #63)
+* Bump OpenResty version and download URL
+
+## 0.5.5
+
+* Support environment variables to rocks installation
+* Bump OpenResty version
+
 ## 0.5.4
 
 * Fix source recompilation on every run (#15)

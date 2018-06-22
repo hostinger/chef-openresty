@@ -26,7 +26,7 @@ require 'chef/version_constraint'
 case node['platform_family']
 when 'debian'
   include_recipe 'apt'
-when 'rhel'
+when 'rhel', 'amazon'
   include_recipe 'yum'
 end
 
@@ -39,6 +39,14 @@ directory node['openresty']['source']['path'] do
   recursive true
 end
 
+directory node['openresty']['source']['state'] do
+  owner 'root'
+  group 'root'
+  mode 00755
+  action :nothing
+  only_if { (! Chef::Config[:chef_server_url]) || (Chef::Config[:chef_server_url].include?('chefzero')) }
+end.run_action(:create)
+
 # use vars for these for delayed interpolation
 src_file_name=node['openresty']['source']['name'] % { file_prefix: node['openresty']['source']['file_prefix'], version: node['openresty']['source']['version'] }
 src_file_url=node['openresty']['source']['url'] % { name: src_file_name }
@@ -47,18 +55,19 @@ src_filepath  = "#{node['openresty']['source']['path']}/#{src_file_name}.tar.gz"
 
 packages = value_for_platform_family(
   ['rhel','fedora','amazon','scientific'] => ['openssl-devel', 'readline-devel', 'ncurses-devel', 'bzip2'],
-  'debian' => ['libperl-dev', 'libssl-dev', 'libreadline-dev', 'libncurses5-dev', 'bzip2']
+  'suse' => ['libopenssl-devel', 'readline-devel', 'ncurses-devel', 'bzip2'],
+  'debian' => ['libperl-dev', 'libssl-dev', 'libreadline-dev', 'libncurses5-dev', 'bzip2', 'zlib1g-dev']
 )
 
 # Enable AIO for newer kernels
 packages |= value_for_platform_family(
-    ['rhel','fedora','amazon','scientific'] => [ 'libatomic_ops-devel' ],
+    ['rhel','fedora','amazon','scientific','suse'] => [ 'libatomic_ops-devel' ],
     'debian' => [ 'libatomic-ops-dev', 'libaio1', 'libaio-dev' ]
 ) if kernel_supports_aio
 
-packages.each do |devpkg|
-  package devpkg
-end
+package packages do
+  action :nothing
+end.run_action(:install)
 
 remote_file src_file_url do
   source src_file_url
@@ -92,7 +101,7 @@ if node['openresty']['custom_pcre']
 else
   pcre_opts = ''
   value_for_platform_family(
-    ['rhel','fedora','amazon','scientific'] => [ 'pcre', 'pcre-devel' ],
+    ['rhel','fedora','amazon','scientific','suse'] => [ 'pcre', 'pcre-devel' ],
     'debian' => ['libpcre3', 'libpcre3-dev' ]
   ).each do |pkg|
     package pkg
@@ -140,7 +149,7 @@ end
 
 if node['openresty']['or_modules']['drizzle']
   drizzle = value_for_platform_family(
-    ['rhel','fedora','amazon','scientific'] => 'libdrizzle-devel',
+    ['rhel','fedora','amazon','scientific','suse'] => 'libdrizzle-devel',
     'debian' => 'libdrizzle-dev'
   )
   package drizzle
@@ -160,10 +169,12 @@ openresty_force_recompile = node.run_state['openresty_force_recompile']
 
 ruby_block 'persist-openresty-configure-flags' do
   block do
-    if Chef::Config[:solo]
-      ::File.write(::File.join(::File.dirname(src_filepath), 'openresty.configure-opts'), configure_flags.sort.uniq.join("\n"))
+    if (! Chef::Config[:chef_server_url]) || (Chef::Config[:chef_server_url].include?('chefzero')) then
+      require 'fileutils'
+      ::FileUtils.mkdir_p(node['openresty']['source']['state'])
+      ::File.write(::File.join(node['openresty']['source']['state'], 'openresty.configure-opts'), configure_flags.sort.uniq.join("\n"))
     else
-      node.set['openresty']['persisted_configure_flags'] = configure_flags.sort.uniq
+      node.normal['openresty']['persisted_configure_flags'] = configure_flags.sort.uniq
     end
   end
   action :nothing
@@ -181,12 +192,12 @@ bash 'compile_openresty_source' do
   EOH
 
   # OpenResty configure args massaging due to the configure script adding its own arguments along our custom ones
-  if Chef::Config[:solo]
+  if (! Chef::Config[:chef_server_url]) || (Chef::Config[:chef_server_url].include?('chefzero'))
     not_if do
       openresty_force_recompile == false &&
         node.automatic_attrs['nginx'] &&
         node.automatic_attrs['nginx']['version'] == node['openresty']['source']['version'] &&
-        (::File.read(::File.join(::File.dirname(src_filepath), 'openresty.configure-opts')) || '' rescue '') ==
+        (::File.read(::File.join(node['openresty']['source']['state'], 'openresty.configure-opts')) || '' rescue '') ==
         configure_flags.sort.uniq.join("\n")
     end
   else

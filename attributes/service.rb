@@ -21,7 +21,19 @@
 #
 
 # Service recipe for inclusion (can be extra-cookbook)
-default['openresty']['service']['recipe']             = 'openresty::service_init'
+default['openresty']['service']['recipe'] = case node['platform_family']
+    when 'suse'
+        'openresty::service_systemd'
+    when 'rhel'
+        if node['platform_version'].to_i >= 7 && node['platform'] != 'amazon'
+            'openresty::service_systemd'
+        else
+            'openresty::service_init'
+        end
+    else
+        'openresty::service_init'
+    end
+
 # Service resource handler - used for notifications
 default['openresty']['service']['resource']           = 'service[nginx]'
 # Restart automatically after version update

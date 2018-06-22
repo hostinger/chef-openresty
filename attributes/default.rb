@@ -21,12 +21,12 @@
 #
 
 # Download data
-default['openresty']['source']['version']     = '1.11.2.1'
+default['openresty']['source']['version']     = '1.13.6.2'
 default['openresty']['source']['file_prefix'] = 'openresty'
-default['openresty']['source']['checksum']    = '0e55b52bf6d77ac2d499ae2b05055f421acde6bb937e650ed8f482d11cbeeb5c'
+default['openresty']['source']['checksum']    = '946e1958273032db43833982e2cec0766154a9b5cb8e67868944113208ff2942'
 #use %{} for delayed interpolation
 default['openresty']['source']['name']        = "%{file_prefix}-%{version}"
-default['openresty']['source']['url']         = "http://agentzh.org/misc/nginx/%{name}.tar.gz"
+default['openresty']['source']['url']         = "https://openresty.org/download/%{name}.tar.gz"
 
 # Directories
 default['openresty']['dir']                   = '/etc/nginx'
@@ -42,6 +42,7 @@ default['openresty']['error_log']             = [
 # Namespaced attributes in order not to clash with the OHAI plugin
 default['openresty']['source']['conf_path']   = "#{node['openresty']['dir']}/nginx.conf"
 default['openresty']['source']['prefix']      = '/usr/share'
+default['openresty']['source']['state']       = '/etc/chef_state.d'
 
 ## Extract our source here and compile from this location.
 ## by default we use #{Chef::Config['file_cache_path']
@@ -82,8 +83,7 @@ default['openresty']['modules']         = [
   'http_realip_module',
   'http_flv_module',
   'http_mp4_module',
-  'cache_purge_module',
-  'fair_module'
+  'cache_purge_module'
 ]
 
 # If you want to include extra-cookbook modules, just override this array, the will be included in the form
@@ -95,7 +95,7 @@ default['openresty']['configure_flags'] = Array.new
 case node['platform_family']
 when 'debian'
   default['openresty']['user']        = 'www-data'
-when 'rhel', 'fedora'
+when 'rhel', 'fedora', 'amazon'
   default['openresty']['user']        = 'nginx'
 else
   default['openresty']['user']        = 'www-data'
@@ -133,6 +133,7 @@ default['openresty']['gzip_types']        = [
 
 default['openresty']['keepalive']                     = 'on'
 default['openresty']['keepalive_timeout']             = 5
+default['openresty']['keepalive_requests']            = 100
 default['openresty']['worker_processes']              = node['cpu'] && node['cpu']['total'] ? node['cpu']['total'] : 1
 default['openresty']['worker_auto_affinity']          = true
 default['openresty']['worker_connections']            = 4096

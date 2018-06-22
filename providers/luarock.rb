@@ -19,6 +19,8 @@
 # limitations under the License.
 #
 
+use_inline_resources
+
 require 'mixlib/shellout'
 
 def luarocks
@@ -31,7 +33,8 @@ def get_installed_rock_version(rock, version = nil)
   if (cmd.exitstatus != 0) || (! cmd.exitstatus)
     nil
   else
-    cmd.stdout.strip.split("\n").fetch(0).split.fetch(1).split('-').first rescue nil
+    res = cmd.stdout.strip.split("\n").fetch(0).split.fetch(1) rescue nil
+    ((version && version.include?('-')) ? res : res.split('-').first) rescue nil
   end
 end
 
@@ -39,11 +42,12 @@ def is_version_installed?(rock, version = nil)
   true && get_installed_rock_version(rock, version)
 end
 
-def install_rock(rock, version = nil)
-  cmd = Mixlib::ShellOut.new("#{luarocks} install #{rock} #{version if version}")
+def install_rock(rock, version = nil, env = {})
+  env_str = env.map{|k,v| "#{k}=#{v}"}.join
+  cmd = Mixlib::ShellOut.new("#{luarocks} install #{rock} #{version if version} #{env_str}", :env => env)
   cmd.run_command
   if (cmd.exitstatus != 0) || (! cmd.exitstatus)
-    Chef::Application.fatal!("Installation of OpenResty LUA rock [#{rock}] #{('version [' + version + ']') if version} failed")
+    Chef::Application.fatal!("Installation of OpenResty LUA rock [#{rock}] #{('version [' + version + ']') if version} failed: #{cmd.stderr || 'N/A'}")
     nil
   else
     true
@@ -64,15 +68,14 @@ end
 action :install do
   rock = new_resource.name
   version = new_resource.version rescue nil
+  env = new_resource.environment rescue {}
   current_version = get_installed_rock_version(rock)
   installed_version = is_version_installed?(rock, version)
   Chef::Log.debug("OpenResty LUA rock [#{rock}] version #{'[' + (version || 'latest') + ']'} scheduled for installation")
   if ((version) && (version != installed_version)) || (! current_version)
-    Chef::Log.info("Installing OpenResty LUA rock [#{rock}] #{('version [' + version + ']') if version}")
-    install_rock(rock, version)
-    new_resource.updated_by_last_action(true)
-  else
-    new_resource.updated_by_last_action(false)
+    converge_by "Installing OpenResty LUA rock [#{rock}] #{('version [' + version + ']') if version}" do
+      install_rock(rock, version, env)
+    end
   end
 end
 
@@ -83,10 +86,8 @@ action :remove do
   installed_version = is_version_installed?(rock, version)
   Chef::Log.debug("OpenResty LUA rock [#{rock}] version #{'[' + (version || 'latest') + ']'} scheduled for removal")
   if (current_version) && ((! version) || (version == installed_version))
-    Chef::Log.info("Uninstalling OpenResty LUA rock [#{rock}] #{('version [' + version + ']') if version}")
-    remove_rock(rock, version)
-    new_resource.updated_by_last_action(true)
-  else
-    new_resource.updated_by_last_action(false)
+    converge_by "Uninstalling OpenResty LUA rock [#{rock}] #{('version [' + version + ']') if version}" do
+      remove_rock(rock, version)
+    end
   end
 end
