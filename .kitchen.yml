@@ -1,42 +1,12 @@
 ---
 driver:
-  name: docker
+  name: vagrant
 
 provisioner:
-  name: chef_solo
-  log_level: info
+  name: chef_zero
 
 platforms:
-  - name: ubuntu-16.04-chef-12
-    provisioner:
-      product_name: chef
-      install_strategy: once
-      product_version: 12
-      hostname: chef-12-ubuntu.local
-      run_options:
-        e:
-          - LANGUAGE=en_US.UTF-8
-          - LC_ALL=en_US.UTF-8
-  - name: ubuntu-16.04-chef-latest
-    provisioner:
-      product_name: chef
-      install_strategy: once
-      product_version: latest
-      hostname: chef-latest-ubuntu.local
-      run_options:
-        e:
-          - LANGUAGE=en_US.UTF-8
-          - LC_ALL=en_US.UTF-8
-  - name: centos-7.2
-    provisioner:
-      product_name: chef
-      install_strategy: once
-      product_version: latest
-      hostname: chef-latest-centos.local
-      run_options:
-        e:
-          - LANGUAGE=en_US.UTF-8
-          - LC_ALL=en_US.UTF-8
+  - name: centos-7.6
 
 suites:
   - name: default
