@@ -4,9 +4,11 @@ driver:
 
 provisioner:
   name: chef_zero
+  product_name: cinc
+  product_version: 17
 
 platforms:
-  - name: centos-7.6
+  - name: centos-7
 
 suites:
   - name: default

@@ -16,8 +16,8 @@ recipe 'openresty', 'Installs the OpenResty NGINX bundle and sets up configurati
 end
 
 depends 'build-essential'
-depends 'logrotate'
-depends 'ohai', '~> 5.0'
+depends 'logrotate', '~> 2.0'
+depends 'ohai', '~> 5.2.0'
 depends 'yum'
 depends 'apt'
 depends 'git'
